@@ -1,4 +1,4 @@
-Smart Health AI Platform 🩺🤖
+Smart Fit AI 🩺🤖
 =============================
 
 A cutting-edge, microservices-based platform that transforms wearable device data into personalized, AI-driven health insights. This project is built using **Java**, **Spring Boot**, and **Spring Cloud** to create a scalable and resilient system.
@@ -6,7 +6,7 @@ A cutting-edge, microservices-based platform that transforms wearable device dat
 ✨ Overview
 ----------
 
-The **Smart Health AI Platform** is an intelligent system designed for the modern health-conscious individual. It seamlessly collects vital metrics from smartwatches, processes this data through a robust, event-driven architecture, and leverages the power of the **Gemini 2.0 Flash API** to deliver actionable, real-time health advice.
+The **Smart Fit AI** is an intelligent system designed for the modern health-conscious individual. It seamlessly collects vital metrics from smartwatches, processes this data through a robust, event-driven architecture, and leverages the power of the **Gemini 2.0 Flash API** to deliver actionable, real-time health advice.
 
 From personalized diet plans to critical safety alerts based on your vitals, our platform acts as your personal health companion.
 
