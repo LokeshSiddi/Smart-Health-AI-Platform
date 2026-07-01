@@ -1,18 +1,35 @@
-# Smart-Fit AI
+# 🏋️ Smart Fit AI
 
-AI-powered fitness tracking platform built using Spring Boot microservices. The system collects user activity data, processes fitness metrics, and generates personalized health recommendations using Google's Gemini AI.
+> AI-powered Microservices Health Recommendation Platform built with Spring Boot, Spring Cloud, RabbitMQ, PostgreSQL, MongoDB, and Google Gemini AI.
 
 ---
 
 ## Overview
 
-Smart-Fit AI demonstrates a production-style microservices architecture using Spring Cloud components, asynchronous communication with RabbitMQ, service discovery with Eureka, centralized configuration management, and AI-powered recommendation generation.
+Smart Fit AI is a distributed fitness platform that demonstrates modern backend engineering principles using a microservices architecture.
 
-The platform consists of independent services that collaborate to manage users, track fitness activities, and generate personalized recommendations.
+The application collects user activity data, processes fitness metrics asynchronously, and generates AI-powered personalized health recommendations.
+
+The project was built to explore:
+
+- Microservices Architecture
+- Event-Driven Communication
+- Service Discovery
+- API Gateway Pattern
+- AI Integration
+- Database-per-Service Pattern
 
 ---
 
-## Architecture
+## Problem Statement
+
+Traditional monolithic fitness applications tightly couple user management, activity tracking, and recommendation logic.
+
+This project separates these responsibilities into independent services, allowing each service to evolve and scale independently while communicating through asynchronous messaging.
+
+---
+
+# Architecture
 
 ```text
 ┌─────────────┐
@@ -64,43 +81,75 @@ The platform consists of independent services that collaborate to manage users, 
 
                             MongoDB
 ```
+---
+
+## Services
+
+### User Service
+
+Responsible for:
+
+- User Registration
+- User Validation
+- Profile Management
+
+Database
+
+- PostgreSQL
 
 ---
 
-## Features
+### Activity Service
 
-### User Management
+Responsible for:
 
-- User registration
-- User profile retrieval
-- User validation service
-- PostgreSQL persistence
+- Activity Tracking
+- Activity History
+- Publishing Activity Events
 
-### Activity Tracking
+Database
 
-- Track fitness activities
-- Store activity records
-- Retrieve activity history
-- MongoDB storage
-
-### AI Recommendations
-
-- Personalized fitness recommendations
-- Activity-based health insights
-- Gemini AI integration
-- Recommendation history storage
-
-### Microservices Infrastructure
-
-- Spring Cloud Config Server
-- Eureka Service Discovery
-- API Gateway
-- RabbitMQ Event Messaging
-- Distributed configuration management
+- MongoDB
 
 ---
 
-## Tech Stack
+### AI Service
+
+Responsible for:
+
+- Consuming RabbitMQ Events
+- Communicating with Gemini AI
+- Generating Recommendations
+
+Database
+
+- MongoDB
+
+---
+
+## Engineering Decisions
+
+### Why Microservices?
+
+Separated business domains into independent services to reduce coupling and improve maintainability.
+
+### Why RabbitMQ?
+
+Recommendation generation does not need to block activity creation.
+
+RabbitMQ enables asynchronous processing between Activity Service and AI Service.
+
+### Why PostgreSQL?
+
+User information is relational and transactional, making PostgreSQL a better fit.
+
+### Why MongoDB?
+
+Activity records and AI recommendations are document-oriented and evolve frequently.
+
+---
+
+## Technology Stack
 
 ### Backend
 
@@ -110,9 +159,9 @@ The platform consists of independent services that collaborate to manage users, 
 
 ### Infrastructure
 
-- Spring Cloud Gateway
 - Eureka Server
 - Config Server
+- API Gateway
 
 ### Messaging
 
@@ -127,206 +176,117 @@ The platform consists of independent services that collaborate to manage users, 
 
 - Google Gemini API
 
-### Build Tool
+---
 
-- Maven
+## Request Flow
+
+1. User registers.
+2. User submits activity.
+3. Activity Service validates the user.
+4. Activity stored in MongoDB.
+5. Activity event published to RabbitMQ.
+6. AI Service consumes the event.
+7. Gemini generates recommendations.
+8. Recommendation stored.
+9. Client retrieves recommendations.
 
 ---
 
-## Services
+## API Overview
 
 ### User Service
 
-Handles user registration and profile management.
-
-#### Endpoints
-
-```http
 POST /api/users/register
-```
 
-Register a new user.
-
-```http
-GET /api/users/{userId}
-```
-
-Retrieve user profile.
-
-```http
-GET /api/users/{userId}/validate
-```
-
-Validate user existence.
+GET /api/users/{id}
 
 ---
 
 ### Activity Service
 
-Handles activity tracking and fitness data processing.
-
-#### Endpoints
-
-```http
 POST /api/activities
-```
 
-Track a fitness activity.
-
-```http
 GET /api/activities
-```
-
-Retrieve user activities.
-
-```http
-GET /api/activities/{activityId}
-```
-
-Retrieve specific activity.
 
 ---
 
 ### AI Service
 
-Generates AI-powered recommendations.
-
-#### Endpoints
-
-```http
-GET /api/recommendations/user/{userId}
-```
-
-Get all recommendations for a user.
-
-```http
-GET /api/recommendations/activity/{activityId}
-```
-
-Get recommendation for a specific activity.
-
----
-
-## Configuration Services
-
-### Eureka Server
-
-Service discovery and registration.
-
-**Port:** `8761`
-
-### Config Server
-
-Centralized configuration management.
-
-**Port:** `8888`
-
-### API Gateway
-
-Single entry point for all services.
-
----
-
-## Databases
-
-| Service | Database |
-|----------|----------|
-| User Service | PostgreSQL |
-| Activity Service | MongoDB |
-| AI Service | MongoDB |
-
----
-
-## Event Flow
-
-1. User registers through User Service.
-2. User submits activity data.
-3. Activity Service validates the user.
-4. Activity data is stored in MongoDB.
-5. Activity event is published to RabbitMQ.
-6. AI Service consumes the event.
-7. Gemini AI generates recommendations.
-8. Recommendations are stored and exposed through APIs.
+GET /api/recommendations/user/{id}
 
 ---
 
 ## Project Structure
 
-```text
+```
 Smart-Fit-AI
 │
+├── gateway
+├── eureka
+├── configserver
 ├── userservice
 ├── activityservice
-├── aiservice
-├── gateway
-├── configserver
-└── eureka
+└── aiservice
 ```
 
 ---
 
-## Running the Project
+## Running Locally
 
-### Prerequisites
+Prerequisites
 
 - Java 21
-- Maven
 - PostgreSQL
 - MongoDB
 - RabbitMQ
-- Gemini API Key
 
-### Startup Order
+Startup Order
 
-```text
 1. PostgreSQL
 2. MongoDB
 3. RabbitMQ
 4. Config Server
-5. Eureka Server
-6. API Gateway
+5. Eureka
+6. Gateway
 7. User Service
 8. Activity Service
 9. AI Service
-```
 
 ---
 
-## Environment Variables
+## Production Improvements
 
-```env
-GEMINI_API_KEY=your_api_key
-GEMINI_API_URL=your_gemini_endpoint
-```
+If this project were deployed to production, the following improvements would be added:
 
----
-
-## Learning Outcomes
-
-This project demonstrates:
-
-- Microservices Architecture
-- Service Discovery
-- API Gateway Pattern
-- Event-Driven Communication
-- Distributed Configuration
-- AI Integration
-- Database-per-Service Pattern
-- Spring Cloud Ecosystem
-
----
-
-## Future Improvements
-
-- Docker Compose Deployment
-- Kubernetes Support
 - JWT Authentication
-- Prometheus & Grafana Monitoring
+- Docker Compose
+- Kubernetes
+- Prometheus & Grafana
 - OpenAPI Documentation
-- CI/CD Pipeline
 - Distributed Tracing
 - Rate Limiting
-- Health Monitoring
+- CI/CD Pipeline
+
+---
+
+## Challenges
+
+- Managing communication across multiple services
+- Coordinating asynchronous workflows
+- Integrating AI responses into an event-driven pipeline
+
+---
+
+## Lessons Learned
+
+This project helped strengthen my understanding of:
+
+- Spring Cloud
+- Event-driven Architecture
+- RabbitMQ
+- API Gateway Pattern
+- AI Integration
+- Distributed Systems Fundamentals
 
 ---
 
