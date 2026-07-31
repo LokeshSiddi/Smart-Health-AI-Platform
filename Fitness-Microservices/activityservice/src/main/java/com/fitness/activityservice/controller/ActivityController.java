@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/activities")
 @AllArgsConstructor
-public class ActivityController {
+public class    ActivityController {
 
     private ActivityService activityService;
 
