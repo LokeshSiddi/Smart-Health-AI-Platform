@@ -20,10 +20,17 @@ public class ActivityMessageListener {
     @RabbitListener(queues = "activity.queue")
     public void processActivity(Activity activity) {
         log.info("Received activity for Processing : {}", activity.getId());
-//        log.info("Generated Recommendation : {}", aiService.generateRecommendation(activity));
-        Recommendation recommendation = aiService.generateRecommendation(activity);
-        recommendationRepository.save(recommendation);
+
+        try {
+            Recommendation recommendation = aiService.generateRecommendation(activity);
+            if (recommendation != null) {
+                recommendationRepository.save(recommendation);
+                log.info("Successfully generated and saved recommendation for activity: {}", activity.getId());
+            }
+        } catch (Exception e) {
+            // Log the failure without re-throwing the exception.
+            // This prevents RabbitMQ from re-queueing the message indefinitely.
+            log.error("Failed to generate recommendation for activity {}: {}", activity.getId(), e.getMessage());
+        }
     }
-
-
 }
