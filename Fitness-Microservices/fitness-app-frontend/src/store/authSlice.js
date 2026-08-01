@@ -15,7 +15,7 @@ const authSlice = createSlice({
 
         localStorage.setItem('token', action.payload.token);
         localStorage.setItem('user', JSON.stringify(action.payload.user));
-        localStorage.setItem('userId', action.payload.user.sub);
+        localStorage.setItem('userId', action.payload.user.sub); // This is KeycloakId 
     },
     logOut: (state) => {
         state.user = null;

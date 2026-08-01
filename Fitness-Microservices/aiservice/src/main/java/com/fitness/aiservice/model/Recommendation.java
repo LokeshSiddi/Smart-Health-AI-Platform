@@ -23,6 +23,11 @@ public class Recommendation {
     private String activityId;
     private String userId;
     private String activityType;
+
+    private Integer duration;
+    private Integer caloriesBurned;
+    private LocalDateTime activityDate;
+
     private String recommendation;
     private List<String> improvements;
     private List<String> suggestions;

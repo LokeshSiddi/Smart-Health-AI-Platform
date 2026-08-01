@@ -37,16 +37,16 @@ public class UserService {
     }
 
     public UserResponse getUserProfile(String userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User Not Found"));
+        User user = userRepository.findByKeycloakId(userId)
+                .orElseThrow(() -> new RuntimeException("User Not Found")); // Since Frontend sends Keycloak ID as UserId
 
         return getUserResponse(user);
     }
 
     public Boolean existByUserId(String userId) {
         log.info("Calling for Validation API for userId : {}", userId);
-//        return userRepository.existsByKeycloakId(userId); // Use when frontend is finished and passes keycloakId
-        return userRepository.existsById(userId); // Use when Developing and passes userId
+        return userRepository.existsByKeycloakId(userId); // Use when frontend is finished and passes keycloakId
+//        return userRepository.existsById(userId); // Use when Developing and passes userId
     }
 
     public UserResponse getUserResponse(User user) {

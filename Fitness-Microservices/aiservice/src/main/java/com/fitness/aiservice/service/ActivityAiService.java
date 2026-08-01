@@ -30,7 +30,7 @@ public class ActivityAiService {
         return processAiResponse(activity, aiResponse);
     }
 
-    public Recommendation processAiResponse(Activity activity, String aiResponse) {
+    private Recommendation processAiResponse(Activity activity, String aiResponse) {
 
         try{
 
@@ -44,12 +44,17 @@ public class ActivityAiService {
                     .get(0)
                     .path("text");
 
-            String jsonContent = textNode.asText()
-                    .replaceAll("```json\\n", "")
-                    .replaceAll("\\n```", "")
-                    .trim();
+            String jsonContent = textNode.asText().trim();
 
-//            log.info("PARSED RESPONSE FROM AI : {}", jsonContent);
+            if (jsonContent.startsWith("```")) {
+                int firstNewLine = jsonContent.indexOf('\n');
+                int lastBackticks = jsonContent.lastIndexOf("```");
+                if (firstNewLine != -1 && lastBackticks > firstNewLine) {
+                    jsonContent = jsonContent.substring(firstNewLine + 1, lastBackticks).trim();
+                }
+            }
+
+            log.info("PARSED RESPONSE FROM AI : {}", jsonContent);
 
             JsonNode analysisJson = mapper.readTree(jsonContent);
 
@@ -69,6 +74,9 @@ public class ActivityAiService {
                     .activityId(activity.getId())
                     .userId(activity.getUserId())
                     .activityType(activity.getType())
+                    .duration(activity.getDuration())
+                    .caloriesBurned(activity.getCaloriesBurned())
+                    .activityDate(activity.getCreatedAt())
                     .recommendation(fullAnalysis.toString().trim())
                     .improvements(improvements)
                     .suggestions(suggestions)
@@ -77,6 +85,8 @@ public class ActivityAiService {
                     .build();
         } catch (Exception e) {
             e.printStackTrace();
+            log.error("Failed to parse Gemini JSON response. Error: {}", e.getMessage(), e);
+            log.error("Raw AI Response was: \n{}", aiResponse);
             return createDefaultRecommendation(activity);
         }
 
@@ -87,6 +97,9 @@ public class ActivityAiService {
                 .activityId(activity.getId())
                 .userId(activity.getUserId())
                 .activityType(activity.getType())
+                .duration(activity.getDuration())
+                .caloriesBurned(activity.getCaloriesBurned())
+                .activityDate(activity.getCreatedAt())
                 .recommendation("Unable to Generate Detailed Analysis")
                 .improvements(Collections.singletonList("Continue with your Current Routine"))
                 .suggestions(Collections.singletonList("Consider Consulting a Fitness Professional"))
@@ -157,7 +170,7 @@ public class ActivityAiService {
               "improvements": [
                 {
                   "area": "Area name",
-                  "recommendation": "Detailed recommendation",
+                  "recommendation": "Detailed recommendation"
                 }
               ],
               "suggestions": [

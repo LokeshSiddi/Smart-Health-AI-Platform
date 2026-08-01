@@ -14,7 +14,7 @@ import java.util.Map;
 @Slf4j
 public class GeminiService {
 
-    private WebClient webClient;
+    private final WebClient webClient;
 
     @Value("${gemini.api.url}")
     private String geminiApiUrl;
@@ -61,7 +61,7 @@ public class GeminiService {
                     return Mono.error(new RuntimeException("GEMINI_SERVER_ERROR"));
                 })
                 .bodyToMono(String.class)
-                .onErrorReturn("Fallback recommendation: Maintain a balanced workout routine.") // Graceful fallback
+                .onErrorReturn("{\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"{\\\"analysis\\\": {\\\"overall\\\": \\\"AI service temporarily unavailable. Maintain a balanced workout routine.\\\"}, \\\"improvements\\\": [], \\\"suggestions\\\": [], \\\"safety\\\": []}\"}]}}]}")
                 .block();
 
 //                .retrieve()
