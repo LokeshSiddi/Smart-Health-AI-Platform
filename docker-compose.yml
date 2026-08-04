@@ -5,60 +5,68 @@ services:
   # 1. INFRASTRUCTURE LAYER
   # ==========================================
   postgres:
-    image: postgres:15-alpine
-    container_name: postgres-db
+    image: postgres:16-alpine
+    container_name: smartfit_postgres
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: fitness_user_db # Creates the only DB we need automatically
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: fitness_user_db
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - fitness-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d fitness_user_db"]
-      interval: 5s
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}" ]
+      interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 20s
+    networks:
+      - smartfit_network
 
   mongodb:
-    image: mongo:7.0
-    container_name: mongo-db
+    image: mongo:7-jammy
+    container_name: smartfit_mongodb
+    restart: unless-stopped
     ports:
       - "27017:27017"
     volumes:
-      - mongo_data:/data/db
-    networks:
-      - fitness-network
+      - mongodb_data:/data/db
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-      interval: 5s
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 20s
+    networks:
+      - smartfit_network
 
   rabbitmq:
-    image: rabbitmq:3-management-alpine
-    container_name: rabbitmq-broker
+    image: rabbitmq:3.13-management-alpine
+    container_name: smartfit_rabbitmq
+    restart: unless-stopped
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
     ports:
-      - "5672:5672"
-      - "15672:15672"
-    networks:
-      - fitness-network
+      - "5672:5672"    # AMQP protocol port
+      - "15672:15672"  # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 5s
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
+    networks:
+      - smartfit_network
 
   keycloak:
-    image: quay.io/keycloak/keycloak:latest
-    container_name: keycloak-auth
-    # Runs in dev mode (uses internal H2 DB) and imports your realm config
+    image: quay.io/keycloak/keycloak:24.0.1
+    container_name: smartfit_keycloak
+    restart: unless-stopped
     command: start-dev --import-realm
     environment:
       KEYCLOAK_ADMIN: admin
@@ -66,140 +74,224 @@ services:
     ports:
       - "8181:8080"
     volumes:
-      # Put your realm-export.json in a folder named 'keycloak-setup' in your root directory
-      - ./keycloak-setup:/opt/keycloak/data/import
+      - ./keycloak/fitness-oauth2-realm.json:/opt/keycloak/data/import/fitness-oauth2-realm.json:ro
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
     networks:
-      - fitness-network
+      - smartfit_network
 
   # ==========================================
   # 2. DISCOVERY & CONFIG LAYER
   # ==========================================
   eureka:
-    build: ./eureka
-    container_name: eureka
+    build:
+      context: ./eureka
+      dockerfile: Dockerfile
+    container_name: smartfit_eureka
+    restart: unless-stopped
     ports:
       - "8761:8761"
+    environment:
+      - SERVER_PORT=8761
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8761/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
     networks:
-      - fitness-network
+      - smartfit_network
 
   configserver:
-    build: ./configserver
-    container_name: configserver
+    build:
+      context: ./configserver
+      dockerfile: Dockerfile
+    container_name: smartfit_configserver
+    restart: unless-stopped
     ports:
       - "8888:8888"
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
+      - SERVER_PORT=8888
+      - SPRING_PROFILES_ACTIVE=native
+      - SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS=classpath:/config
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8888/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
     networks:
-      - fitness-network
-    depends_on:
-      - eureka
+      - smartfit_network
 
   # ==========================================
   # 3. MICROSERVICES LAYER
   # ==========================================
   userservice:
-    build: ./userservice
-    container_name: userservice
+    build:
+      context: ./userservice
+      dockerfile: Dockerfile
+    container_name: smartfit_userservice
+    restart: unless-stopped
     ports:
       - "8081:8081"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/fitness_user_db
-      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
-      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
+      - SERVER_PORT=8081
       - SPRING_CONFIG_IMPORT=optional:configserver:http://configserver:8888
-    networks:
-      - fitness-network
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka:8761/eureka/
+      # Override localhost → postgres (Docker service name)
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/fitness_user_db
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-postgres}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-postgres}
     depends_on:
-      postgres:
+      configserver:
         condition: service_healthy
       eureka:
-        condition: service_started
-      configserver:
-        condition: service_started
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8081/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    networks:
+      - smartfit_network
 
   activityservice:
-    build: ./activityservice
-    container_name: activityservice
+    build:
+      context: ./activityservice
+      dockerfile: Dockerfile
+    container_name: smartfit_activityservice
+    restart: unless-stopped
     ports:
       - "8082:8082"
     environment:
-      # Connects to standard Mongo DB (Collections created lazily)
-      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/fitness_activity
-      - SPRING_RABBITMQ_HOST=rabbitmq
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
+      - SERVER_PORT=8082
       - SPRING_CONFIG_IMPORT=optional:configserver:http://configserver:8888
-    networks:
-      - fitness-network
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka:8761/eureka/
+      # Override localhost → mongodb (Docker service name)
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/fitness_activity
+      # Override localhost → rabbitmq (Docker service name)
+      # Only HOST overridden; port + credentials
+      # stay as guest/guest from config server
+      - SPRING_RABBITMQ_HOST=rabbitmq
     depends_on:
+      configserver:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
       mongodb:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      eureka:
-        condition: service_started
-      configserver:
-        condition: service_started
+      userservice:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8082/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    networks:
+      - smartfit_network
 
   aiservice:
-    build: ./aiservice
-    container_name: aiservice
+    build:
+      context: ./aiservice
+      dockerfile: Dockerfile
+    container_name: smartfit_aiservice
+    restart: unless-stopped
     ports:
       - "8083:8083"
     environment:
-      # Connects to standard Mongo DB (Collections created lazily)
-      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/fitness_recommendation
-      - SPRING_RABBITMQ_HOST=rabbitmq
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
+      - SERVER_PORT=8083
       - SPRING_CONFIG_IMPORT=optional:configserver:http://configserver:8888
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka:8761/eureka/
+      # Override localhost → mongodb (Docker service name)
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/fitness_recommendation
+      # Override localhost → rabbitmq (Docker service name)
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      # Gemini credentials from .env file
+      # Never hardcode API keys
       - GEMINI_API_URL=${GEMINI_API_URL}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-    networks:
-      - fitness-network
     depends_on:
+      configserver:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
       mongodb:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      eureka:
-        condition: service_started
-      configserver:
-        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8083/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    networks:
+      - smartfit_network
 
   # ==========================================
   # 4. GATEWAY & FRONTEND LAYER
   # ==========================================
   gateway:
-    build: ./gateway
-    container_name: gateway
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: smartfit_gateway
+    restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
+      - SERVER_PORT=8080
       - SPRING_CONFIG_IMPORT=optional:configserver:http://configserver:8888
-      # Gateway talks to Keycloak internally to fetch the JWK certs for decoding tokens
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka:8761/eureka/
+      # Override localhost:8181 from config to Docker hostname
+      # Gateway runs inside Docker so it must reach
+      # keycloak via internal network not localhost
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/fitness-oauth2/protocol/openid-connect/certs
-    networks:
-      - fitness-network
     depends_on:
-      - eureka
-      - configserver
-      - keycloak
+      configserver:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    networks:
+      - smartfit_network
 
   frontend:
-    build: ./fitness-app-frontend
-    container_name: fitness-frontend
+    build:
+      context: ./fitness-app-frontend
+      dockerfile: Dockerfile
+    container_name: smartfit_frontend
+    restart: unless-stopped
     ports:
-      - "5173:80"
-    networks:
-      - fitness-network
+      - "5173:5173"
     depends_on:
-      - gateway
+      gateway:
+        condition: service_healthy
+    networks:
+      - smartfit_network
 
 networks:
-  fitness-network:
+  smartfit_network:
     driver: bridge
 
 volumes:
   postgres_data:
-  mongo_data:
+  mongodb_data:
+  rabbitmq_data:
