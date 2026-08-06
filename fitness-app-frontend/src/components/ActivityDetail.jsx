@@ -10,7 +10,7 @@ const ActivityDetail = () => {
     
     useEffect(() => {
         let isMounted = true;
-        const fetchWithRetry = async (retries = 5, delay = 2000) => {
+        const fetchWithRetry = async (retries = 6, delay = 3000) => {
             try {
                 const response = await getActivityDetail(id);
                 if(isMounted) {

@@ -1,0 +1,41 @@
+name: Deploy Frontend to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      # Only trigger when frontend code changes
+      - 'Fitness-Microservices/fitness-app-frontend/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: Fitness-Microservices/fitness-app-frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: Fitness-Microservices/fitness-app-frontend
+        run: npm ci
+
+      - name: Build
+        working-directory: Fitness-Microservices/fitness-app-frontend
+        run: npm run build
+        env:
+          VITE_KEYCLOAK_URL: http://localhost:8181
+          VITE_REDIRECT_URI: https://LokeshSiddi.github.io/Smart-Fit-AI/
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: Fitness-Microservices/fitness-app-frontend/dist

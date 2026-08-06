@@ -324,11 +324,14 @@
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
         "http://localhost:5173/*",
-        "http://localhost:5173",
-        "https://oauth.pstmn.io/v1/callback"
+        "http://localhost:5173/",
+        "https://oauth.pstmn.io/v1/callback",
+        "https://LokeshSiddi.github.io/Smart-Fit-AI/*",
+        "https://LokeshSiddi.github.io/Smart-Fit-AI/"
       ],
       "webOrigins": [
-        "http://localhost:5173"
+        "http://localhost:5173",
+        "https://LokeshSiddi.github.io"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -341,18 +344,22 @@
       "frontchannelLogout": true,
       "protocol": "openid-connect",
       "attributes": {
-        "realm_client": "false",
         "logout.confirmation.enabled": "false",
-        "oidc.ciba.grant.enabled": "false",
-        "backchannel.logout.session.required": "true",
         "standard.token.exchange.enabled": "false",
         "oauth2.jwt.authorization.grant.enabled": "false",
         "frontchannel.logout.session.required": "true",
+        "post.logout.redirect.uris": "https://LokeshSiddi.github.io/Smart-Fit-AI/*",
         "oauth2.device.authorization.grant.enabled": "false",
+        "backchannel.logout.revoke.offline.tokens": "false",
+        "realm_client": "false",
+        "oidc.ciba.grant.enabled": "false",
+        "backchannel.logout.session.required": "true",
         "display.on.consent.screen": "false",
         "pkce.code.challenge.method": "S256",
-        "backchannel.logout.revoke.offline.tokens": "false",
-        "dpop.bound.access.tokens": "false"
+        "dpop.bound.access.tokens": "false",
+        "login_theme": "",
+        "consent.screen.text": "",
+        "frontchannel.logout.url": ""
       },
       "authenticationFlowBindingOverrides": {},
       "fullScopeAllowed": true,
@@ -371,7 +378,13 @@
         "organization",
         "offline_access",
         "microprofile-jwt"
-      ]
+      ],
+      "access": {
+        "view": true,
+        "configure": true,
+        "manage": true
+      },
+      "authorizationServicesEnabled": false
     },
     {
       "id": "dc964451-d51e-4cfd-8a82-5ae784e33b73",
