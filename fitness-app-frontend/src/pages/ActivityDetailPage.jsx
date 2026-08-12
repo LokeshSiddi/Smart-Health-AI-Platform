@@ -15,18 +15,16 @@ import {
   Link as MuiLink,
   Alert,
 } from '@mui/material';
-import {
-  ArrowBack,
-  Home,
-  LocalFireDepartment,
-  Timer,
-  CalendarToday,
-  Psychology,
-  CheckCircle,
-  Warning,
-  Lightbulb,
-  TipsAndUpdates,
-} from '@mui/icons-material';
+import ArrowBack from '@mui/icons-material/ArrowBack';
+import Home from '@mui/icons-material/Home';
+import LocalFireDepartment from '@mui/icons-material/LocalFireDepartment';
+import Timer from '@mui/icons-material/Timer';
+import CalendarToday from '@mui/icons-material/CalendarToday';
+import Psychology from '@mui/icons-material/Psychology';
+import CheckCircle from '@mui/icons-material/CheckCircle';
+import Warning from '@mui/icons-material/Warning';
+import Lightbulb from '@mui/icons-material/Lightbulb';
+import TipsAndUpdates from '@mui/icons-material/TipsAndUpdates';
 import { getActivityDetail } from '../services/api';
 
 const InfoTile = ({ icon, label, value, color = 'primary' }) => (

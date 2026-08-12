@@ -1,10 +1,8 @@
 import { Box, Button, Typography, Container, Paper, Grid } from '@mui/material';
-import {
-  FitnessCenter,
-  Insights,
-  Timeline,
-  Psychology,
-} from '@mui/icons-material';
+import FitnessCenter from '@mui/icons-material/FitnessCenter';
+import Insights from '@mui/icons-material/Insights';
+import Timeline from '@mui/icons-material/Timeline';
+import Psychology from '@mui/icons-material/Psychology';
 
 const features = [
   {

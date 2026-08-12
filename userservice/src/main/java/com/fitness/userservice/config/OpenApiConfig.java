@@ -32,7 +32,7 @@ public class OpenApiConfig {
                         .contact(new Contact()
                                 .name("Lokesh Siddi")
                                 .url("https://github.com/LokeshSiddi")
-                                .email("lokeshsiddi@example.com")))
+                                .email("lokeshsiddi06@gmail.com")))
                 .components(new Components().addSecuritySchemes(
                         "bearerAuth",
                         new SecurityScheme()

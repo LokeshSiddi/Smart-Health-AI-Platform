@@ -11,12 +11,10 @@ import {
   Divider,
   Tooltip,
 } from '@mui/material';
-import {
-  FitnessCenter,
-  Home,
-  Logout,
-  AccountCircle,
-} from '@mui/icons-material';
+import FitnessCenter from '@mui/icons-material/FitnessCenter';
+import Home from '@mui/icons-material/Home';
+import Logout from '@mui/icons-material/Logout';
+import AccountCircle from '@mui/icons-material/AccountCircle';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 

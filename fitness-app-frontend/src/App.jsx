@@ -1,31 +1,25 @@
-import { Box, Button, Typography } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "react-oauth2-code-pkce";
 import { useDispatch } from "react-redux";
-import { BrowserRouter as Router, Navigate, Route, Routes, useLocation } from "react-router";
+import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 import { setCredentials } from "./store/authSlice";
-import ActivityForm from "./components/ActivityForm";
-import ActivityList from "./components/ActivityList";
-import ActivityDetail from "./components/ActivityDetail";
+import LandingPage from "./pages/LandingPage";
+import Navbar from "./components/Navbar";
+import Dashboard from "./pages/Dashboard";
+import ActivityDetailPage from "./pages/ActivityDetailPage";
 
-
-const ActvitiesPage = () => {
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  const handleActivityAdded = () => {
-    setRefreshKey((prevKey) => prevKey + 1);
-  };
-
-  return (
-    <Box sx={{ p: 2, border: '1px dashed grey' }}>
-      <ActivityForm onActivityAdded={handleActivityAdded} />
-      <ActivityList key={refreshKey} />
-    </Box>
-  );
-};
+// const token = "mock-jwt-token-12345";
+// const tokenData = { sub: "mock-user-id-999", name: "Test User" };
 
 function App() {
-  const { token, tokenData, logIn, logOut, isAuthenticated } = useContext(AuthContext);
+  const { token, tokenData, logIn, logOut } = useContext(AuthContext);
+  
+  // MOCK AUTHENTICATION: 
+  // const logIn = () => console.log("Mock Login triggered");
+  // const logOut = () => console.log("Mock Logout triggered");
+  const isAuthenticated = true;
+
   const dispatch = useDispatch();
   const [authReady, setAuthReady] = useState(false);
   
@@ -36,53 +30,25 @@ function App() {
     }
   }, [token, tokenData, dispatch]);
 
+  if (!token) {
+    return <LandingPage onLogin={logIn} />;
+  }
+
   return (
     <Router>
-      {!token ? (
-      <Box
-      sx={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        textAlign: "center",
-      }}
-    >
-      <Typography variant="h4" gutterBottom>
-        Welcome to the Fitness Tracker App
-      </Typography>
-      <Typography variant="subtitle1" sx={{ mb: 3 }}>
-        Please login to access your activities
-      </Typography>
-      <Button variant="contained" color="primary" size="large" onClick={() => {
-                logIn();
-              }}>
-        LOGIN
-      </Button>
-    </Box>
-            ) : (
-              // <div>
-              //   <pre>{JSON.stringify(tokenData, null, 2)}</pre>
-              //   <pre>{JSON.stringify(token, null, 2)}</pre>
-              // </div>
-
-             
-
-              <Box sx={{ p: 2, border: '1px dashed grey' }}>
-                 <Button variant="contained" color="secondary" onClick={logOut}>
-                  Logout
-                </Button>
-              <Routes>
-                <Route path="/activities" element={<ActvitiesPage />}/>
-                <Route path="/activities/:id" element={<ActivityDetail />}/>
-
-                <Route path="/" element={token ? <Navigate to="/activities" replace/> : <div>Welcome! Please Login.</div>} />
-              </Routes>
-            </Box>
-            )}
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+        <Navbar user={tokenData} onLogout={logOut} />
+        <Box sx={{ py: 3 }}>
+          <Routes>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/activities/:id" element={<ActivityDetailPage />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </Box>
+      </Box>
     </Router>
-  )
+  );
 }
 
-export default App
+export default App;

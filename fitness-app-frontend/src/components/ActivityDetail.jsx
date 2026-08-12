@@ -1,84 +1,106 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router";
-import { getActivityDetail } from "../services/api";
-import { Box, Card, CardContent, Divider, Typography } from '@mui/material';
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Divider,
+  Grid,
+  Stack,
+  Typography,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
-const ActivityDetail = () => {
-    const { id } = useParams();
-    const [activity, setActivity] = useState(null);
-    const [recommendation, setRecommendation] = useState(null);
-    
-    useEffect(() => {
-        let isMounted = true;
-        const fetchWithRetry = async (retries = 6, delay = 3000) => {
-            try {
-                const response = await getActivityDetail(id);
-                if(isMounted) {
-                    setActivity(response.data);
-                    setRecommendation(response.data.recommendation);
-                }
-            } catch (error) {
-                if (retries > 0 && isMounted) {
-                    setTimeout(() => fetchWithRetry(retries - 1, delay), delay);
-                } else {
-                    console.error("Failed to load recommendation after retries", error);
-                }
-            }
-        };
-       
-        fetchWithRetry();
-        return () => { isMounted = false; };
-    }, [id]);
+function ActivityDetail({ activity }) {
+  const navigate = useNavigate();
 
-    if (!activity) {
-        return <Typography>Loading...</Typography>
-    }
-    return (
-        <Box sx={{maxWidth: 800, mx: 'auto', p: 2}}>
-            <Card sx={{ mb: 2}}>
-                <CardContent>
-                    <Typography variant="h5" gutterBottom>Activity Details</Typography>
-                    <Typography>Type: {activity.activityType || activity.type || 'N/A'}</Typography>
-                    <Typography>Duration: {activity.duration ? `${activity.duration} minutes` : 'Not recorded in AI summary'}</Typography>
-                    <Typography>Calories Burned: {activity.caloriesBurned || 'Not recorded in AI summary'}</Typography>
-                    <Typography>Date: {activity.createdAt ? new Date(activity.createdAt).toLocaleString() : 'N/A'}</Typography>
-                </CardContent>
-            </Card>
+  const metrics = Object.entries(activity.additionalMetrics || {});
 
-            {recommendation && (
-                <Card>
-                    <CardContent>
-                        <Typography variant="h5" gutterBottom>AI Recommendation</Typography>
-                        <Typography variant="h6">Analysis</Typography>
-                        <Typography paragraph>{activity.recommendation}</Typography>
+  return (
+    <Stack spacing={3}>
+      <Button
+        startIcon={<ArrowBackRoundedIcon />}
+        onClick={() => navigate("/activities")}
+        sx={{ alignSelf: "flex-start" }}
+      >
+        Back to activities
+      </Button>
 
-                        <Divider sx={{ my: 2}} />
+      <Card>
+        <CardContent>
+          <Typography variant="h4" gutterBottom>
+            {activity.type}
+          </Typography>
 
-                        <Typography variant="h6">Improvements</Typography>
-                        {activity?.improvements?.map((improvement, index) => (
-                            <Typography key={index} paragraph>• {improvement}</Typography>
-                        ))}
+          <Typography color="text.secondary" sx={{ mb: 3 }}>
+            {new Date(activity.createdAt).toLocaleString()}
+          </Typography>
 
-                        <Divider sx={{ my: 2}} />
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={4}>
+              <Chip
+                label={`${activity.duration} minutes`}
+                color="primary"
+                sx={{ width: "100%" }}
+              />
+            </Grid>
 
-                        <Typography variant="h6">Suggestions</Typography>
-                        {activity?.suggestions?.map((suggestion, index) => (
-                            <Typography key={index} paragraph>• {suggestion}</Typography>
-                        ))}
+            <Grid item xs={12} sm={4}>
+              <Chip
+                label={`${activity.caloriesBurned} kcal`}
+                color="secondary"
+                sx={{ width: "100%" }}
+              />
+            </Grid>
 
-                        <Divider sx={{ my: 2}} />
+            <Grid item xs={12} sm={4}>
+              <Chip
+                label={`${metrics.length} metrics`}
+                sx={{ width: "100%" }}
+              />
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
 
-                        <Typography variant="h6">Safety Guidelines</Typography>
-                        {activity?.safety?.map((safety, index) => (
-                            <Typography key={index} paragraph>• {safety}</Typography>
-                        ))}
+      <Card>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Additional metrics
+          </Typography>
 
-                    </CardContent>
-                </Card>
-            )}
+          <Divider sx={{ mb: 2 }} />
 
-        </Box>
-    )
+          {metrics.length === 0 ? (
+            <Typography color="text.secondary">
+              No additional metrics were recorded.
+            </Typography>
+          ) : (
+            <Stack spacing={1.5}>
+              {metrics.map(([key, value]) => (
+                <Stack
+                  key={key}
+                  direction="row"
+                  justifyContent="space-between"
+                  sx={{
+                    p: 1.5,
+                    borderRadius: 2,
+                    bgcolor: "rgba(148,163,184,.08)",
+                  }}
+                >
+                  <Typography color="text.secondary">{key}</Typography>
+                  <Typography fontWeight={700}>{String(value)}</Typography>
+                </Stack>
+              ))}
+            </Stack>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Render your recommendation card here */}
+    </Stack>
+  );
 }
 
-export default ActivityDetail
+export default ActivityDetail;
