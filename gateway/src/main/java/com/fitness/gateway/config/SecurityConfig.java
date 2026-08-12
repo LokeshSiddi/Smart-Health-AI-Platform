@@ -31,7 +31,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173/"));
+        config.setAllowedOrigins(List.of("http://localhost:5173", "https://LokeshSiddi.github.io/Smart-Fit-AI"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-User-ID"));
         config.setAllowCredentials(true);

@@ -8,7 +8,6 @@ import { store } from './store/store'
 import { authConfig } from './authConfig'
 import { AuthProvider } from 'react-oauth2-code-pkce'
 
-// As of React 18
 const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
   <AuthProvider authConfig={authConfig} 

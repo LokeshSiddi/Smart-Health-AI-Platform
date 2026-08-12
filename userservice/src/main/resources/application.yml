@@ -8,8 +8,8 @@ spring:
 
 #  datasource:
 #    url: jdbc:postgresql://localhost:5432/fitness_user_db
-#    username: postgres
-#    password: Siddi@0305
+#    username: ${DB_USERNAME:postgres}
+#    password: ${DB_PASSWORD}
 #  jpa:
 #    hibernate:
 #      ddl-auto: update

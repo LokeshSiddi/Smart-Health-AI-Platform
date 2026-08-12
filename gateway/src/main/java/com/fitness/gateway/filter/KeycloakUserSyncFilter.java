@@ -1,6 +1,6 @@
 package com.fitness.gateway.filter;
 
-import com.fitness.gateway.user.RegisterRequest;
+import com.fitness.gateway.dto.RegisterRequest;
 import com.fitness.gateway.user.UserService;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;

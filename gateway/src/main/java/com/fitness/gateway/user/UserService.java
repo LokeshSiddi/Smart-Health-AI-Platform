@@ -1,5 +1,9 @@
 package com.fitness.gateway.user;
 
+import com.fitness.gateway.dto.RegisterRequest;
+import com.fitness.gateway.dto.UserResponse;
+import com.fitness.gateway.exception.InvalidUserDataException;
+import com.fitness.gateway.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -22,10 +26,12 @@ public class UserService {
             .retrieve()
             .bodyToMono(Boolean.class)
             .onErrorResume(WebClientResponseException.class, e -> {
-                if (e.getStatusCode() == HttpStatus.NOT_FOUND)
-                    return Mono.error(new RuntimeException("User Not Found : " + userId));
+                if (e.getStatusCode() == HttpStatus.UNAUTHORIZED)
+                    return Mono.error(new RuntimeException("Unauthorized : Invalid or missing token for user " + userId));
+                else if (e.getStatusCode() == HttpStatus.NOT_FOUND)
+                    return Mono.error(new UserNotFoundException("User Not Found : " + userId));
                 else if (e.getStatusCode() == HttpStatus.BAD_REQUEST)
-                    return Mono.error(new RuntimeException("Invalid Request : " + userId));
+                    return Mono.error(new InvalidUserDataException("Invalid Request : " + userId));
                 return Mono.error(new RuntimeException("Unexpected Error : " + e.getMessage()));
             });
     }

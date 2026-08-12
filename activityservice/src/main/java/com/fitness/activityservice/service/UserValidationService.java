@@ -1,6 +1,6 @@
 package com.fitness.activityservice.service;
 
-import com.fitness.activityservice.config.WebClientConfig;
+import com.fitness.activityservice.exception.UserValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -25,9 +25,9 @@ public class UserValidationService {
                     .block());
         } catch (WebClientResponseException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND)
-                throw new RuntimeException("User Not Found : " + userId);
+                throw new UserValidationException("User not found with ID: " + userId);
             else if (e.getStatusCode() == HttpStatus.BAD_REQUEST)
-                throw new RuntimeException("Invalid Request : " + userId);
+                throw new UserValidationException("Invalid Request : " + userId);
         }
         return false;
     }

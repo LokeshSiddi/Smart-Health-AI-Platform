@@ -4,10 +4,6 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
 
 @Data
 public class RegisterRequest {
@@ -16,12 +12,16 @@ public class RegisterRequest {
     @Email(message = "Invalid Email Format")
     private String email;
 
-    private String keycloakId;
-
     @NotBlank(message = "Password is Required")
     @Size(min = 6, message = "Password must have atleast 6 characters")
     private String password;
+
+    private String keycloakId;
+
+    @NotBlank(message = "First name is required")
     private String firstName;
+
+    @NotBlank(message = "Last name is required")
     private String lastName;
 
 }

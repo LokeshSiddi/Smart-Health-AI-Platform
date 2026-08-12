@@ -1,0 +1,20 @@
+docker compose build --no-cache
+(OR)
+docker compose build --no-cache userservice activityservice aiservice
+
+docker compose up -d
+(OR)
+docker compose up -d userservice activityservice aiservice
+
+docker compose ps
+
+docker system prune -f
+
+# Stop and remove containers + volumes
+docker compose down -v
+
+# Stop containers and delete existing postgres volumes
+docker compose down -v
+
+# Rebuild and launch the stack
+docker compose up -d --build

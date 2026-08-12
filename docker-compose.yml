@@ -96,8 +96,11 @@ services:
   # ==========================================
   eureka:
     build:
-      context: ./eureka
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: eureka/Dockerfile
+      args:
+        SERVICE_NAME: eureka
+        PORT: 8761
     container_name: smartfit_eureka
     restart: unless-stopped
     ports:
@@ -115,8 +118,11 @@ services:
 
   configserver:
     build:
-      context: ./configserver
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: configserver/Dockerfile
+      args:
+        SERVICE_NAME: configserver
+        PORT: 8888
     container_name: smartfit_configserver
     restart: unless-stopped
     ports:
@@ -139,8 +145,11 @@ services:
   # ==========================================
   userservice:
     build:
-      context: ./userservice
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: userservice/Dockerfile
+      args:
+        SERVICE_NAME: userservice
+        PORT: 8081
     container_name: smartfit_userservice
     restart: unless-stopped
     ports:
@@ -173,8 +182,11 @@ services:
 
   activityservice:
     build:
-      context: ./activityservice
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: activityservice/Dockerfile
+      args:
+        SERVICE_NAME: activityservice
+        PORT: 8082
     container_name: smartfit_activityservice
     restart: unless-stopped
     ports:
@@ -213,8 +225,11 @@ services:
 
   aiservice:
     build:
-      context: ./aiservice
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: aiservice/Dockerfile
+      args:
+        SERVICE_NAME: aiservice
+        PORT: 8083
     container_name: smartfit_aiservice
     restart: unless-stopped
     ports:
@@ -256,8 +271,11 @@ services:
   # ==========================================
   gateway:
     build:
-      context: ./gateway
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: gateway/Dockerfile
+      args:
+        SERVICE_NAME: gateway
+        PORT: 8080
     container_name: smartfit_gateway
     restart: unless-stopped
     ports:
@@ -295,7 +313,7 @@ services:
     container_name: smartfit_frontend
     restart: unless-stopped
     ports:
-      - "5173:5173"
+      - "5173:80"
     depends_on:
       gateway:
         condition: service_healthy

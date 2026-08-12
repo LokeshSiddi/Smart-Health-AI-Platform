@@ -1,8 +1,10 @@
 package com.fitness.activityservice.service;
 
-import com.fitness.activityservice.config.RabbitMqConfig;
 import com.fitness.activityservice.dto.ActivityRequest;
 import com.fitness.activityservice.dto.ActivityResponse;
+import com.fitness.activityservice.exception.ActivityNotFoundException;
+import com.fitness.activityservice.exception.InvalidActivityDataException;
+import com.fitness.activityservice.exception.UserValidationException;
 import com.fitness.activityservice.model.Activity;
 import com.fitness.activityservice.repository.ActivityRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,10 +32,16 @@ public class ActivityService {
     private String routingKey;
 
     public ActivityResponse trackActivity(ActivityRequest activityRequest) {
+        if (activityRequest.getUserId() == null || activityRequest.getUserId().isBlank()) {
+            throw new InvalidActivityDataException("User ID cannot be empty");
+        }
+        if (activityRequest.getDuration() == null || activityRequest.getDuration() <= 0) {
+            throw new InvalidActivityDataException("Duration must be greater than 0");
+        }
 
         boolean isValidUser = userValidationService.validateUser(activityRequest.getUserId());
         if (!isValidUser)
-            throw new RuntimeException("Invalid User : " + activityRequest.getUserId());
+            throw new UserValidationException("Invalid User : " + activityRequest.getUserId());
 
 
         Activity activity = Activity.builder()
@@ -46,12 +54,14 @@ public class ActivityService {
                 .build();
 
         Activity savedActivity = activityRepository.save(activity);
+        log.info("Activity logged successfully: {}", savedActivity.getId());
 
         // Publish to RabbitMQ for AI Processing
         try{
             rabbitTemplate.convertAndSend(exchange, routingKey, savedActivity);
+            log.info("Activity event published to RabbitMQ for activity ID: {}", savedActivity.getId());
         } catch (Exception e) {
-            log.error("Failed to Publish Activity to RabbitMq : ", e);
+            log.error("Failed to publish activity event: {}", e.getMessage(), e);
         }
 
         return mapToResponse(savedActivity);
@@ -83,7 +93,7 @@ public class ActivityService {
 
     public ActivityResponse getActivity(String activityId) {
         Activity activity = activityRepository.findById(activityId)
-                .orElseThrow(() -> new RuntimeException("Activity Not Found with Id : " + activityId));
+                .orElseThrow(() -> new ActivityNotFoundException("Activity Not Found with Id : " + activityId));
 
         ActivityResponse response = mapToResponse(activity);
 

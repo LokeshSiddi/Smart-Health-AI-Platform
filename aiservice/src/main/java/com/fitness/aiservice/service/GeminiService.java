@@ -1,5 +1,6 @@
 package com.fitness.aiservice.service;
 
+import com.fitness.aiservice.exception.GeminiApiException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
@@ -45,21 +46,34 @@ public class GeminiService {
                 .header("Content-Type", "application/json")
                 .bodyValue(requestBody)
                 .retrieve()
-                // 1. Handle 429 Rate Limits
-                .onStatus(status -> status.value() == 429, response -> {
-                    log.warn("Gemini Rate Limit Exceeded (429)");
-                    return Mono.error(new RuntimeException("RATE_LIMIT_EXCEEDED"));
-                })
-                // 2. Handle 404 Not Found (Invalid Model)
-                .onStatus(status -> status.value() == 404, response -> {
-                    log.error("Gemini Endpoint / Model Not Found (404)");
-                    return Mono.error(new RuntimeException("MODEL_NOT_FOUND"));
-                })
-                // 3. Handle 5xx Google Internal Server Errors
-                .onStatus(HttpStatusCode::is5xxServerError, response -> {
-                    log.error("Gemini Server Error (5xx)");
-                    return Mono.error(new RuntimeException("GEMINI_SERVER_ERROR"));
-                })
+                // 1. Handle 400 Bad Request
+                .onStatus(status -> status.value() == 400, response ->
+                        response.bodyToMono(String.class).flatMap(errorBody -> {
+                            log.error("Gemini Bad Request (400): {}", errorBody);
+                            return Mono.error(new GeminiApiException("BAD_REQUEST"));
+                        })
+                )
+                // 2. Handle 429 Rate Limits
+                .onStatus(status -> status.value() == 429, response ->
+                        response.bodyToMono(String.class).flatMap(errorBody -> {
+                            log.warn("Gemini Rate Limit Exceeded (429). Google responded with: {}", errorBody);
+                            return Mono.error(new GeminiApiException("RATE_LIMIT_EXCEEDED"));
+                        })
+                )
+                // 3. Handle 404 Not Found (Invalid Model)
+                .onStatus(status -> status.value() == 404, response ->
+                        response.bodyToMono(String.class).flatMap(errorBody -> {
+                            log.error("Gemini Endpoint / Model Not Found (404). Google responded with: {}", errorBody);
+                            return Mono.error(new GeminiApiException("MODEL_NOT_FOUND"));
+                        })
+                )
+                // 4. Handle 5xx Google Internal Server Errors
+                .onStatus(HttpStatusCode::is5xxServerError, response ->
+                        response.bodyToMono(String.class).flatMap(errorBody -> {
+                            log.error("Gemini Server Error (5xx). Google responded with: {}", errorBody);
+                            return Mono.error(new GeminiApiException("GEMINI_SERVER_ERROR"));
+                        })
+                )
                 .bodyToMono(String.class)
                 .onErrorReturn("{\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"{\\\"analysis\\\": {\\\"overall\\\": \\\"AI service temporarily unavailable. Maintain a balanced workout routine.\\\"}, \\\"improvements\\\": [], \\\"suggestions\\\": [], \\\"safety\\\": []}\"}]}}]}")
                 .block();
@@ -69,8 +83,8 @@ public class GeminiService {
 //                        status -> status.is4xxClientError() || status.is5xxServerError(),
 //                        clientResponse -> clientResponse.bodyToMono(String.class)
 //                                .flatMap(errorBody -> {
-//                                    System.err.println("Gemini API Error: " + errorBody);
-//                                    return Mono.error(new RuntimeException("Gemini API error: " + errorBody));
+//                                    log.error("Gemini API Error: " + errorBody);
+//                                    return Mono.error(new GeminiApiException("Gemini API error: " + errorBody));
 //                                })
 //                )
 //                .bodyToMono(String.class)
