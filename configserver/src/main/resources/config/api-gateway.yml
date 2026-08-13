@@ -1,6 +1,13 @@
 spring:
   cloud:
     gateway:
+      httpclient:
+        connect-timeout: 2000
+        response-timeout: 3s
+        pool:
+          type: elastic
+          max-connections: 500 # Default is often too low for a 500 VU spike
+          acquire-timeout: 5000
       server:
         webflux:
           routes:
@@ -27,11 +34,22 @@ spring:
 
 server:
   port: 8080
+  tomcat:
+    threads:
+      max: 500 # If using Tomcat (MVC)
+    netty:
+      # If using WebFlux/Netty (Standard for Gateway)
+      connection-timeout: 2000
+      idle-timeout: 10s
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+    registry-fetch-interval-seconds: 30 # Don't fetch every second
+    disable-delta: true
+  instance:
+    lease-renewal-interval-in-seconds: 30
 
 management:
   endpoints:

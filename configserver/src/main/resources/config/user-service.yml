@@ -3,6 +3,10 @@ spring:
     url: jdbc:postgresql://localhost:5432/fitness_user_db
     username: postgres
     password: Siddi@0305
+    hikari:
+      maximum-pool-size: 150 # Increase from default 10
+      minimum-idle: 20
+      connection-timeout: 10000
   jpa:
     hibernate:
       ddl-auto: update

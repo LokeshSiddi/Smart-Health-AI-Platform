@@ -8,6 +8,7 @@ import com.fitness.userservice.model.User;
 import com.fitness.userservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -33,9 +34,18 @@ public class UserService {
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
-
             User existingUser = userRepository.findByEmail(request.getEmail());
-            log.warn("User with email {} already exists", request.getEmail());
+
+            if (request.getKeycloakId() != null && !request.getKeycloakId().equals(existingUser.getKeycloakId())) {
+                log.info("Keycloak ID changed for {}. Updating database from {} to {}",
+                        request.getEmail(), existingUser.getKeycloakId(), request.getKeycloakId());
+
+                existingUser.setKeycloakId(request.getKeycloakId());
+                // Save the updated ID back to the database
+                userRepository.save(existingUser);
+            } else {
+                log.warn("User with email {} already exists", request.getEmail());
+            }
             return getUserResponse(existingUser);
         }
 
@@ -46,9 +56,19 @@ public class UserService {
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
 
-        User savedUser = userRepository.save(user);
-        log.info("User registered successfully with email: {}", savedUser.getEmail());
-        return getUserResponse(savedUser);
+        try {
+            // Attempt to save the user
+            User savedUser = userRepository.save(user);
+            log.info("User registered successfully with email: {}", savedUser.getEmail());
+            return getUserResponse(savedUser);
+
+        } catch (DataIntegrityViolationException e) {
+            // If we hit this block, another thread beat us to the insert.
+            // The user exists now, so we just fetch them and return success.
+            log.info("Concurrent registration detected for email: {}. Retrieving existing user.", request.getEmail());
+            User existingUser = userRepository.findByEmail(request.getEmail());
+            return getUserResponse(existingUser);
+        }
     }
 
     public UserResponse getUserProfile(String userId) {

@@ -44,7 +44,7 @@ public class    ActivityController {
             @ApiResponse(responseCode = "200", description = "Activities retrieved successfully")
     })
     public ResponseEntity<List<ActivityResponse>> getUserActivities(@RequestHeader("X-User-ID") String userId) {
-        log.info("Retrieving all activities of user");
+        log.info("Retrieving all activities of user: " + userId);
         return ResponseEntity.ok(activityService.getUserActivities(userId));
     }
 

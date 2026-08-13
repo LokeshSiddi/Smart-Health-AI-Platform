@@ -1,7 +1,7 @@
 spring:
   data:
     mongodb:
-      uri: mongodb://localhost:27017/fitness_activity
+      uri: mongodb://localhost:27017/fitness_activity?maxPoolSize=500&waitQueueMultiple=5&serverSelectionTimeoutMS=5000
       database: fitness_activity
 
   rabbitmq:

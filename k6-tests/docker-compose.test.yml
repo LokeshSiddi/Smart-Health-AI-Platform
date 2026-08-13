@@ -1,0 +1,107 @@
+# =====================================================================
+# docker-compose for running k6 + dashboards against a locally-running
+# Smart-Fit-AI stack (which is started separately via the project's own
+# `docker-compose.yml`).
+#
+# Usage:
+#   docker compose -f docker-compose.test.yml --profile load up
+#   docker compose -f docker-compose.test.yml --profile smoke up
+#   docker compose -f docker-compose.test.yml --profile spike up
+#   docker compose -f docker-compose.test.yml --profile soak up
+#   docker compose -f docker-compose.test.yml --profile grafana up
+# =====================================================================
+
+services:
+  # --- 1. InfluxDB v2 (time-series store for k6 metrics) -------------
+  influxdb:
+    image: influxdb:2.7-alpine
+    container_name: k6_influxdb
+    ports: ["8086:8086"]
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE:        setup
+      DOCKER_INFLUXDB_INIT_USERNAME:    k6
+      DOCKER_INFLUXDB_INIT_PASSWORD:    k6password
+      DOCKER_INFLUXDB_INIT_ORG:         smartfit
+      DOCKER_INFLUXDB_INIT_BUCKET:      k6
+      DOCKER_INFLUXDB_INIT_RETENTION:   30d
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    networks: [k6net]
+
+  # --- 2. Grafana (visualisation) ------------------------------------
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: k6_grafana
+    ports: ["3000:3000"]
+    environment:
+      GF_SECURITY_ADMIN_USER:     admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED:  "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on: [influxdb]
+    networks: [k6net]
+
+  # --- 3. k6 runner (load profile) -----------------------------------
+  k6-load:
+    image: grafana/k6:0.50.0
+    container_name: k6_load
+    command: run --out influxdb=http://influxdb:8086/k6 /scripts/smart-fit-ai-loadtest.js
+    volumes:
+      - .:/scripts
+    environment:
+      BASE_URL:     http://host.docker.internal:8080
+      USER_URL:     http://host.docker.internal:8081
+      ACT_URL:      http://host.docker.internal:8082
+      AI_URL:       http://host.docker.internal:8083
+      EUREKA_URL:   http://host.docker.internal:8761
+      KEYCLOAK_URL: http://host.docker.internal:8181
+      KC_USER:      testuser
+      KC_PASSWORD:  testpass
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    networks: [k6net]
+    profiles: [load, all]
+
+  # --- 4. k6 smoke ---------------------------------------------------
+  k6-smoke:
+    image: grafana/k6:0.50.0
+    container_name: k6_smoke
+    command: run /scripts/smoke.js
+    volumes: [.:/scripts]
+    environment:
+      BASE_URL:     http://host.docker.internal:8080
+      KEYCLOAK_URL: http://host.docker.internal:8181
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    networks: [k6net]
+    profiles: [smoke, ci, all]
+
+  # --- 5. k6 spike ---------------------------------------------------
+  k6-spike:
+    image: grafana/k6:0.50.0
+    container_name: k6_spike
+    command: run /scripts/spike.js
+    volumes: [.:/scripts]
+    environment:
+      BASE_URL:     http://host.docker.internal:8080
+      KEYCLOAK_URL: http://host.docker.internal:8181
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    networks: [k6net]
+    profiles: [spike, all]
+
+  # --- 6. k6 soak (long-running) -------------------------------------
+  k6-soak:
+    image: grafana/k6:0.50.0
+    container_name: k6_soak
+    command: run /scripts/soak.js
+    volumes: [.:/scripts]
+    environment:
+      BASE_URL:     http://host.docker.internal:8080
+      KEYCLOAK_URL: http://host.docker.internal:8181
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    networks: [k6net]
+    profiles: [soak, all]
+
+volumes:
+  influxdb_data:
