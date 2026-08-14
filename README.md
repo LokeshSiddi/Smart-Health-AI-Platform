@@ -13,7 +13,7 @@ Track workouts, capture rich fitness metrics, and receive asynchronous recommend
 [![Docker](https://img.shields.io/badge/Runtime-Docker_Compose-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[Features](#-features) · [Architecture](#-architecture) · [Quick start](#-quick-start) · [API](#-api-overview) · [Testing](#-testing--performance) · [Roadmap](#-roadmap)
+[Demo](#-project-demo) · [Features](#-features) · [Visuals](#-visual-tour) · [Architecture](#-architecture) · [Quick start](#-quick-start) · [API](#-api-overview) · [Testing](#-testing--performance) · [Roadmap](#-roadmap)
 
 </div>
 
@@ -30,18 +30,19 @@ The repository demonstrates more than CRUD: it combines service discovery, centr
 > [!NOTE]
 > This is a portfolio/learning project, not a medical device. AI-generated output should not replace advice from a qualified health professional.
 
----
-
-## 🎥 Live Demo
+## 🎥 Project demo
 
 <div align="center">
 
-<video src="https://github.com/LokeshSiddi/Smart-Fit-AI/raw/main/docs/Project%20Demo.mp4" width="100%" controls autoplay loop muted>
-</video>
+<a href="https://youtu.be/OeZqiw7siUk">
+  <img src="docs/demo-thumbnail.png" alt="Watch the Smart Fit AI project demo on YouTube" width="900" />
+</a>
 
-[Smart Fit AI Demo Link](https://youtu.be/OeZqiw7siUk)
+<br />
 
-<sub><b>Watch Smart Fit AI in action — Keycloak OAuth2 PKCE login, activity logging, RabbitMQ messaging, and Gemini AI analysis.</b></sub>
+### [▶ Open the MP4 demo](https://github.com/LokeshSiddi/Smart-Fit-AI/raw/main/docs/Project%20Demo.mp4) · [▶ Watch on YouTube](https://youtu.be/OeZqiw7siUk)
+
+<sub>Keycloak OAuth2/PKCE login · activity tracking · RabbitMQ messaging · Gemini-generated analysis</sub>
 
 </div>
 
@@ -69,127 +70,106 @@ The repository demonstrates more than CRUD: it combines service discovery, centr
 - **Operational tooling:** health checks, Actuator, Swagger/OpenAPI, RabbitMQ Management UI, Eureka dashboard, k6, InfluxDB, and Grafana.
 - **Reproducible local environment:** an 11-container Docker Compose stack with persistent volumes and dependency-aware health checks.
 
----
-
-## 📸 App Screenshots & Visuals
+## 📸 Visual tour
 
 <div align="center">
 
-<marquee behavior="scroll" direction="left" scrollamount="5" loop="infinite" onmouseover="this.stop();" onmouseout="this.start();">
-  <img src="docs/screenshots/dashboard.png" alt="Activity Dashboard" height="260" />
-  &nbsp;
-  <img src="docs/screenshots/activity-form.png" alt="Activity Form" height="260" />
-  &nbsp;
-  <img src="docs/screenshots/ai-recommendation.png" alt="AI Recommendation" height="260" />
-  &nbsp;
-  <img src="docs/screenshots/eureka-registry.png" alt="Eureka Service Registry" height="260" />
-  &nbsp;
-  <img src="docs/screenshots/rabbitmq-exchange.png" alt="RabbitMQ Exchange" height="260" />
-  &nbsp;
-  <img src="docs/screenshots/swagger-user-api.png" alt="Swagger OpenAPI UI" height="260" />
-  &nbsp;
-  <img src="docs/screenshots/docker-compose-stack.png" alt="Docker Compose Containers" height="260" />
-  &nbsp;
-  <img src="docs/screenshots/k6-smoke-test.png" alt="k6 Smoke Test" height="260" />
-  &nbsp;
-  <img src="docs/screenshots/k6-spike-test.png" alt="k6 Spike Test" height="260" />
-</marquee>
+<img src="docs/screenshots/visual-tour.gif" alt="Animated tour of the Smart Fit AI application and infrastructure" width="900" />
 
-<sub>💡 <b>Hover over the marquee to pause scrolling.</b></sub>
+<sub><b>Automatic visual tour:</b> dashboard · activity metrics · AI recommendations · Eureka · RabbitMQ · Swagger · Docker · k6</sub>
 
 </div>
 
 <br />
 
 <details>
-<summary><b>🔍 Click here to expand detailed high-resolution screenshot grid</b></summary>
+<summary><b>🔍 Expand the high-resolution screenshot gallery</b></summary>
 <br />
 
 <table>
   <tr>
     <td width="50%" align="center">
       <img src="docs/screenshots/dashboard.png" alt="Smart Fit AI dashboard" />
-      <br /><sub><b>Activity dashboard & aggregate statistics</b></sub>
+      <br /><sub><b>Dashboard and aggregate activity statistics</b></sub>
     </td>
     <td width="50%" align="center">
-      <img src="docs/screenshots/activity-form.png" alt="Activity form" />
-      <br /><sub><b>Activity entry with extended metrics</b></sub>
+      <img src="docs/screenshots/activity-form.png" alt="Activity form with optional metrics" />
+      <br /><sub><b>Activity entry with extended fitness metrics</b></sub>
     </td>
   </tr>
   <tr>
     <td colspan="2" align="center">
-      <img src="docs/screenshots/ai-recommendation.png" alt="AI Recommendation" />
-      <br /><sub><b>Gemini-generated workout feedback and safety guidance</b></sub>
+      <img src="docs/screenshots/ai-recommendation.png" alt="AI-generated activity recommendation" />
+      <br /><sub><b>Gemini-generated analysis, improvements, suggestions, and safety guidance</b></sub>
     </td>
   </tr>
   <tr>
     <td width="50%" align="center">
-      <img src="docs/screenshots/eureka-registry.png" alt="Eureka Service Registry" />
-      <br /><sub><b>Eureka Service Registry</b></sub>
+      <img src="docs/screenshots/eureka-registry.png" alt="Eureka service registry" />
+      <br /><sub><b>Eureka service registry</b></sub>
     </td>
     <td width="50%" align="center">
-      <img src="docs/screenshots/rabbitmq-exchange.png" alt="RabbitMQ Exchange" />
-      <br /><sub><b>RabbitMQ direct exchange & queue bindings</b></sub>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" align="center">
-      <img src="docs/screenshots/swagger-user-api.png" alt="OpenAPI Documentation" />
-      <br /><sub><b>OpenAPI / Swagger UI Documentation</b></sub>
-    </td>
-    <td width="50%" align="center">
-      <img src="docs/screenshots/docker-compose-stack.png" alt="Docker Stack" />
-      <br /><sub><b>11-Container Docker Compose Stack</b></sub>
+      <img src="docs/screenshots/rabbitmq-exchange.png" alt="RabbitMQ exchange binding" />
+      <br /><sub><b>RabbitMQ direct exchange and queue binding</b></sub>
     </td>
   </tr>
   <tr>
     <td width="50%" align="center">
-      <img src="docs/screenshots/k6-smoke-test.png" alt="k6 Smoke Test" />
-      <br /><sub><b>k6 Smoke Test (0% Error Rate)</b></sub>
+      <img src="docs/screenshots/swagger-user-api.png" alt="Swagger UI" />
+      <br /><sub><b>OpenAPI/Swagger documentation</b></sub>
     </td>
     <td width="50%" align="center">
-      <img src="docs/screenshots/k6-spike-test.png" alt="k6 Spike Test" />
-      <br /><sub><b>k6 100-VU Spike Test (33.9ms p95)</b></sub>
+      <img src="docs/screenshots/docker-compose-stack.png" alt="Docker Compose services" />
+      <br /><sub><b>Eleven-container Docker Compose platform</b></sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/k6-smoke-test.png" alt="k6 smoke test" />
+      <br /><sub><b>k6 smoke test with 0% HTTP failures</b></sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/k6-spike-test.png" alt="k6 spike test" />
+      <br /><sub><b>k6 100-VU spike test with 33.9 ms p95 latency</b></sub>
     </td>
   </tr>
 </table>
 
 </details>
 
----
-
 ## 🏗 Architecture
 
 ```mermaid
 flowchart LR
-    U[User] --> FE[React + Material UI]
-    FE -->|OAuth 2.0 / OIDC with PKCE| KC[Keycloak]
-    FE -->|Bearer JWT| GW[Spring Cloud Gateway]
-    GW -. JWT validation via JWKS .-> KC
+    U["User"] --> FE["React and Material UI"]
+    FE -->|OIDC and PKCE| KC["Keycloak"]
+    FE -->|Bearer JWT| GW["Spring Cloud Gateway"]
+    GW -->|Validate JWT using JWKS| KC
 
-    GW -->|lb://USER-SERVICE| US[User Service]
-    GW -->|lb://ACTIVITY-SERVICE| AS[Activity Service]
-    GW -->|lb://AI-SERVICE| AIS[AI Service]
+    GW -->|User API| US["User Service"]
+    GW -->|Activity API| AS["Activity Service"]
+    GW -->|Recommendation API| AIS["AI Service"]
 
-    US --> PG[(PostgreSQL\nfitness_user_db)]
-    AS -->|Validate identity| US
-    AS --> AM[(MongoDB\nfitness_activity)]
-    AS -->|activity.tracking| EX{{RabbitMQ\nfitness.exchange}}
-    EX --> Q[[activity.queue]]
-    Q --> AIS
-    AIS --> GEM[Google Gemini API]
-    AIS --> RM[(MongoDB\nfitness_recommendation)]
+    US --> PG["PostgreSQL: fitness_user_db"]
+    AS -->|Validate user| US
+    AS --> AM["MongoDB: fitness_activity"]
+    AS -->|Publish event| MQ["RabbitMQ: fitness.exchange to activity.queue"]
+    MQ -->|Consume event| AIS
+    AIS --> GEM["Google Gemini API"]
+    AIS --> RM["MongoDB: fitness_recommendation"]
 
-    CS[Spring Cloud Config] -. centralized config .-> GW
-    CS -. centralized config .-> US
-    CS -. centralized config .-> AS
-    CS -. centralized config .-> AIS
+    CS["Spring Cloud Config"] --> GW
+    CS --> US
+    CS --> AS
+    CS --> AIS
 
-    EU[Eureka Server] -. discovery .-> GW
-    EU -. discovery .-> US
-    EU -. discovery .-> AS
-    EU -. discovery .-> AIS
+    EU["Eureka Server"] --> GW
+    EU --> US
+    EU --> AS
+    EU --> AIS
 ```
+
+<sub>If GitHub's Mermaid renderer is temporarily unavailable, open the [static architecture diagram](docs/architecture.png) or the [Mermaid source](docs/architecture.mmd).</sub>
 
 ### Activity-to-recommendation flow
 

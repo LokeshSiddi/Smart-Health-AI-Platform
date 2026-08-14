@@ -1,0 +1,27 @@
+flowchart LR
+    U["User"] --> FE["React and Material UI"]
+    FE -->|OIDC and PKCE| KC["Keycloak"]
+    FE -->|Bearer JWT| GW["Spring Cloud Gateway"]
+    GW -->|Validate JWT using JWKS| KC
+
+    GW -->|User API| US["User Service"]
+    GW -->|Activity API| AS["Activity Service"]
+    GW -->|Recommendation API| AIS["AI Service"]
+
+    US --> PG["PostgreSQL: fitness_user_db"]
+    AS -->|Validate user| US
+    AS --> AM["MongoDB: fitness_activity"]
+    AS -->|Publish event| MQ["RabbitMQ: fitness.exchange to activity.queue"]
+    MQ -->|Consume event| AIS
+    AIS --> GEM["Google Gemini API"]
+    AIS --> RM["MongoDB: fitness_recommendation"]
+
+    CS["Spring Cloud Config"] --> GW
+    CS --> US
+    CS --> AS
+    CS --> AIS
+
+    EU["Eureka Server"] --> GW
+    EU --> US
+    EU --> AS
+    EU --> AIS
