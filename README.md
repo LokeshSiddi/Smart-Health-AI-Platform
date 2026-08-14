@@ -36,9 +36,8 @@ The repository demonstrates more than CRUD: it combines service discovery, centr
 
 <div align="center">
 
-<video src="https://youtu.be/OeZqiw7siUk" width="100%" controls autoplay loop muted poster="docs/screenshots/dashboard.png">
-  Your browser does not support HTML5 video. <a href="docs/demo.mp4">Click here to watch the demo video directly</a>.
-</video>
+<video src="https://github.com/LokeshSiddi/Smart-Fit-AI/raw/main/docs/Project%20Demo.mp4" width="100%" controls autoplay loop muted></video>
+[![Smart Fit AI Demo](https://img.youtube.com/vi/OeZqiw7siUk/0.jpg)](https://youtu.be/OeZqiw7siUk)
 
 <sub><b>Watch Smart Fit AI in action — Keycloak OAuth2 PKCE login, activity logging, RabbitMQ messaging, and Gemini AI analysis.</b></sub>
 
