@@ -1,3 +1,5 @@
 *.env
 /.env.local
-.idea/
+.idea
+Docker Compose CMDs.txt
+ExternalPrograms.txt
